@@ -4,9 +4,14 @@
             <div class="catalog__link_to_cart">Cart: {{CART.length}}</div>
         </router-link>
         <h1>Catalog</h1>
+        <v-select
+            :selected="selected"
+            :options="categories"
+            @select="sortByCategories"
+        />
         <div class="catalog__list">
             <catalog-item
-                    v-for="product in PRODUCTS"
+                    v-for="product in filteredProducts"
                     :key="product.article"
                     :product_data="product"
                     @addToCart="addToCart"
@@ -17,29 +22,55 @@
 
 <script>
     import catalogItem from './catalog-item';
-    import { mapActions, mapGetters } from 'vuex';
+    import vSelect from "../select";
+    import {mapActions, mapGetters} from 'vuex';
 
     export default {
         name: "catalog",
         components: {
-            catalogItem
+            catalogItem,
+            vSelect
         },
         data() {
-            return {}
+            return {
+                categories: [
+                    {name: 'Все', value: 'ALL'},
+                    {name: 'Мужские', value: 'м'},
+                    {name: 'Женские', value: 'ж'},
+                ],
+                selected: 'Все',
+                sortedProducts: [],
+            }
         },
         computed: {
             ...mapGetters([
                 'PRODUCTS',
                 'CART'
-            ])
+            ]),
+            filteredProducts(){
+                if(this.sortedProducts.length){
+                    return this.sortedProducts;
+                } else {
+                    return this.PRODUCTS
+                }
+            }
         },
         methods: {
             ...mapActions([
                 'GET_PRODUCTS_FROM_API',
                 'ADD_TO_CART'
             ]),
-            addToCart(data){
+            addToCart(data) {
                 this.ADD_TO_CART(data);
+            },
+            sortByCategories(category){
+                this.sortedProducts = [];
+                this.PRODUCTS.map(item => {
+                    if(item.category === category.name){
+                        this.sortedProducts.push(item);
+                    }
+                });
+                this.selected = category.name;
             }
         },
         mounted() {
@@ -49,14 +80,15 @@
 </script>
 
 <style lang="scss">
-    .catalog{
-        &__list{
+    .catalog {
+        &__list {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
         }
-        &__link_to_cart{
+
+        &__link_to_cart {
             position: absolute;
             top: 10px;
             right: 10px;
