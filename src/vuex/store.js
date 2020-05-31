@@ -12,7 +12,10 @@ const actions = {...actionsCommon, ...apiRequests};
 export const store = new Vuex.Store({
     state: {
         products: [],
-        cart: []
+        cart: [],
+        isMobile: false,
+        isDesktop: true,
+        searchValue: '',
     },
     mutations,
     actions,
